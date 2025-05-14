@@ -35,7 +35,7 @@ Once the server is running (localhost:8080), you can interact with the key-value
 ### Add
 - **URL**: `kvs/add?key=<your_key>`
 - **Method**: `POST`
-- **Body**: `{"value": "<your_value>"}`
+- **Body**: `{"<your_value>"}`
 - **Description**: Add a new key-value pair. Fails if the key already exists.
 
 ### GetRequest All
@@ -66,13 +66,13 @@ Once the server is running (localhost:8080), you can interact with the key-value
 ### Update
 - **URL**: `kvs/update?key=<your_key>`
 - **Method**: `PUT`
-- **Body**: `{"value": "<new_value>"}`
+- **Body**: `{"<your_value>"}`
 - **Description**: Update the value of an existing key. Fails if the key does not exist.
 
 ### Upsert
 - **URL**: `kvs/upsert?key=<your_key>`
 - **Method**: `POST`
-- **Body**: `{"value": "<your_value>"}`
+- **Body**: `{"<your_value>"}`
 - **Description**: Insert a new key-value pair or update the existing key with a new value. 
 
 ## Server Configuration
