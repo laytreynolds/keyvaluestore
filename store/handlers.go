@@ -1,36 +1,104 @@
+// Package store provides core key/value store functionality. The store provides a map of [string]any
 package store
 
-type Storer interface {
-	Get(key string, value []byte) (any, error)
-	Add()
-}
+import (
+	"kvstore/helpers"
+)
 
-type KVStore struct {
-	store map[string]any
-}
+var (
+	Store = NewKeyValueStore()
+)
 
-type Response struct {
-	Value any
-	Error error
-}
+func (s *KVStore) Get(key string) (any, error) {
 
-func NewKeyValueStore() *KVStore {
-	return &KVStore{
-		store: make(map[string]any), // Initialising the map with make
+	value, ok := s.store[key]
+	if !ok {
+		return "", helpers.NotExistError
 	}
+	return value, nil
 }
 
-func (s *KVStore) InitData() {
+func (s *KVStore) Add(key string, v []byte) (any, error) {
 
-	// slice[i] :: ptr + i * size_of_data
-	m := map[string]any{
-		"TestString": []byte(`"Value1"`),                      // Directly using byte slices for strings
-		"TestNumber": []byte(`1`),                             // Directly using byte slices for numbers
-		"TestMap":    []byte(`{"name": "layton", "age": 27}`), // JSON string for a map
+	// Check for duplicate keys
+	if _, ok := s.store[key]; ok {
+		return "", helpers.DuplicateKeyError // Return early if the key already exists
 	}
 
-	for k, v := range m {
-		// Add the byte slice value to the store
-		s.Add(k, v.([]byte))
+	// Parse the value from JSON
+	value, err := helpers.ParseJSON(v)
+	if err != nil {
+		return "", err // Return early if parsing fails
 	}
+	// Add the key-value pair to the store
+	s.store[key] = value
+
+	return value, nil
+}
+
+func (s *KVStore) GetAll() (any, error) {
+
+	return s.store, nil
+}
+
+func (s *KVStore) Exists(key string) (bool, error) {
+
+	if _, ok := s.store[key]; !ok {
+		return false, helpers.NotExistError
+	}
+
+	return true, nil
+}
+
+func (s *KVStore) Count() (int, error) {
+
+	return len(s.store), nil
+}
+
+func (s *KVStore) Clear() (any, error) {
+
+	clear(s.store)
+
+	return s.store, nil
+}
+
+func (s *KVStore) Delete(key string) error {
+
+	if _, ok := s.store[key]; !ok {
+		return helpers.NotExistError
+
+	}
+
+	delete(s.store, key)
+	return nil
+}
+
+func (s *KVStore) Update(key string, v []byte) (any, error) {
+
+	if _, ok := s.store[key]; !ok {
+		return "", helpers.NotExistError
+	}
+
+	// Parse the value from JSON
+	value, err := helpers.ParseJSON(v)
+	if err != nil {
+		return "", err // Return early if parsing fails
+	}
+
+	s.store[key] = value
+
+	return value, nil
+}
+
+func (s *KVStore) Upsert(key string, v []byte) (any, error) {
+
+	// Parse the value from JSON
+	value, err := helpers.ParseJSON(v)
+	if err != nil {
+		return "", err // Return early if parsing fails
+	}
+
+	s.store[key] = value
+
+	return value, nil
 }
